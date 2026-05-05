@@ -3,6 +3,7 @@ import math
 import random
 from pathlib import Path
 import sys
+from qiskit.primitives import StatevectorSampler
 from qiskit_algorithms import QAOA
 from qiskit_algorithms.optimizers import SPSA
 from qiskit_optimization.algorithms import MinimumEigenOptimizer
@@ -11,9 +12,38 @@ raiz = Path(__file__).resolve().parent.parent
 if str(raiz) not in sys.path:
     sys.path.insert(0, str(raiz))
 
-from ruido import crear_sampler_con_ruido
 from evaluacion_kp import evaluar_resultado_qaoa
 from warmstart_kp import crear_solver_warmstart
+
+
+class TimedSamplerJob:
+    def __init__(self, job, sampler):
+        self._job = job
+        self._sampler = sampler
+
+    def result(self):
+        t0 = time.perf_counter()
+        resultado = self._job.result()
+        t1 = time.perf_counter()
+        self._sampler.tiempo_total += (t1 - t0)
+        return resultado
+
+    def __getattr__(self, nombre):
+        return getattr(self._job, nombre)
+
+
+class TimedSampler(StatevectorSampler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tiempo_total = 0
+
+    def run(self, pubs, *, shots=None):
+        job = super().run(pubs, shots=shots)
+        return TimedSamplerJob(job, self)
+
+
+def crear_sampler(shots, semilla):
+    return TimedSampler(default_shots=shots, seed=semilla)
 
 def actualizar_mejor(mejor_resultado, resultado, evaluado):
     if mejor_resultado is None:
@@ -217,7 +247,7 @@ def resolver_qaoa(
     warmstart=False,
     epsilon_warmstart=0.25,
 ):
-    sampler = crear_sampler_con_ruido(shots, semilla, timed=True)
+    sampler = crear_sampler(shots, semilla)
 
     mejor_resultado, historial, t_solver = ejecutar_multi_start_qaoa(
         qp,
