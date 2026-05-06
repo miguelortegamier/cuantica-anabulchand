@@ -1,3 +1,19 @@
+def _leer_variable_sample(sample, indice):
+    nombre = f"x{indice}"
+
+    try:
+        return int(round(sample[nombre]))
+    except (KeyError, ValueError, IndexError):
+        pass
+
+    try:
+        return int(round(sample[indice]))
+    except (KeyError, ValueError, IndexError):
+        raise ValueError(
+            f"No se pudo leer la variable {nombre!r} ni el indice {indice} del sample SA."
+        )
+
+
 def evaluar_resultado_qaoa(resultado, problema):
     variables_binarias = [round(i) for i in resultado.x[: len(problema.valores)]]
 
@@ -19,7 +35,7 @@ def evaluar_resultado_qaoa(resultado, problema):
 
 def evaluar_resultado_sa(sample, problema):
     x = [
-        int(round(sample[f"x{i}"]))
+        _leer_variable_sample(sample, i)
         for i in range(len(problema.valores))
     ]
 

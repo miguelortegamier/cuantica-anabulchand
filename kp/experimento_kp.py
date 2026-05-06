@@ -189,7 +189,7 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
                 problema,
                 caso["optimo"],
                 starts=starts,
-                reads_por_start=reads_por_start,
+                num_reads=reads_por_start,
             )
 
             evaluado = mejor_eval
