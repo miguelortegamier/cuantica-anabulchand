@@ -8,7 +8,7 @@ from qaoa_solver_ap import resolver_qaoa
 from sa_solver_ap import resolver_sa_multi_start
 
 NO_APLICA = "N/A"
-METODOS_QAOA = {"qaoa"}
+METODOS_QAOA = {"qaoa", "qaoa_warmstart"}
 METODOS_SA = {"sa"}
 
 CAMPOS_QAOA = [
@@ -37,16 +37,77 @@ CAMPOS_SA = [
     "reads_por_start",
     "muestras_esperadas",
 ]
+CAMPOS_WARMSTART = [
+    "warmstart",
+    "epsilon_warmstart",
+]
+
+CAMPOS_CSV_AP = [
+    "id",
+    "num_filas",
+    "num_columnas",
+    "tamano_matriz",
+    "num_variables_qubo",
+    "optimo",
+    "coste_total",
+    "violacion",
+    "factible",
+    "coincide",
+    "ratio_optimo",
+    "brecha_optimo",
+    "desviacion_relativa_optimo",
+    "prob_optimo",
+    "ratio_optimo_medio",
+    "tiempo_total",
+    "t_solver",
+    "t_cuantico",
+    "t_clasico",
+    "pct_tiempo_solver_sobre_total",
+    "pct_tiempo_cuantico_sobre_solver",
+    "pct_tiempo_clasico_sobre_solver",
+    "tiempo_medio_iter",
+    "tiempo_por_eval",
+    "total_evals",
+    "num_factibles_qaoa",
+    "prob_optimo_muestras",
+    "prob_optimo_starts",
+    "tasa_factibilidad",
+    "ratio_medio_factibles",
+    "coste_medio_start",
+    "std_coste_start",
+    "tiempo_medio_start",
+    "total_muestras",
+    "starts",
+    "reads_por_start",
+    "muestras_esperadas",
+    "penalizacion",
+    "metodo",
+    "warmstart",
+    "epsilon_warmstart",
+]
 
 
 def guardar_fila_csv(fila, ruta_csv):
     ruta_csv = Path(ruta_csv)
     ruta_csv.parent.mkdir(parents=True, exist_ok=True)
 
-    escribir_cabecera = (not ruta_csv.exists()) or ruta_csv.stat().st_size == 0
+    escribir_cabecera = True
+    modo = "a"
 
-    with ruta_csv.open("a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(fila.keys()))
+    if ruta_csv.exists() and ruta_csv.stat().st_size > 0:
+        with ruta_csv.open("r", newline="", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            cabecera_existente = next(reader, [])
+
+        if cabecera_existente == CAMPOS_CSV_AP:
+            escribir_cabecera = False
+        else:
+            # El CSV de AP estuvo cambiando de esquema; si detectamos uno
+            # antiguo, regeneramos el fichero con la cabecera estable actual.
+            modo = "w"
+
+    with ruta_csv.open(modo, newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=CAMPOS_CSV_AP)
 
         if escribir_cabecera:
             writer.writeheader()
@@ -56,11 +117,15 @@ def guardar_fila_csv(fila, ruta_csv):
 
 def marcar_no_aplica_por_metodo(fila, metodo):
     if metodo in METODOS_SA:
-        for campo in CAMPOS_QAOA:
+        for campo in CAMPOS_QAOA + CAMPOS_WARMSTART:
             fila[campo] = NO_APLICA
     elif metodo in METODOS_QAOA:
         for campo in CAMPOS_SA:
             fila[campo] = NO_APLICA
+
+        if metodo == "qaoa":
+            for campo in CAMPOS_WARMSTART:
+                fila[campo] = NO_APLICA
     else:
         raise ValueError(f"Metodo no reconocido: {metodo}")
 
@@ -152,6 +217,8 @@ def construir_fila_resultado(
         ),
         "penalizacion": penalizacion,
         "metodo": metodo,
+        "warmstart": metricas.get("warmstart", False),
+        "epsilon_warmstart": metricas.get("epsilon_warmstart", None),
     }
 
     return marcar_no_aplica_por_metodo(fila, metodo)
@@ -164,7 +231,9 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
         ruta_csv = Path(__file__).resolve().parent / "resultados_ap.csv"
 
     for caso in casos:
+        t0_total = time.perf_counter()
         problema, qp, penalizacion = construir_problema(caso)
+        t_preparacion = time.perf_counter() - t0_total
 
         t0 = time.perf_counter()
 
@@ -174,6 +243,19 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
                 problema,
                 caso["optimo"],
             )
+            metricas["t_solver"] += t_preparacion
+            metricas["t_clasico"] += t_preparacion
+
+            evaluado = evaluar_resultado_qaoa(result_qaoa, problema)
+        elif metodo == "qaoa_warmstart":
+            result_qaoa, historial, metricas = resolver_qaoa(
+                qp,
+                problema,
+                caso["optimo"],
+                warmstart=True,
+            )
+            metricas["t_solver"] += t_preparacion
+            metricas["t_clasico"] += t_preparacion
 
             evaluado = evaluar_resultado_qaoa(result_qaoa, problema)
         elif metodo == "sa":
@@ -192,7 +274,7 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
         else:
             raise ValueError(f"Metodo no reconocido: {metodo}")
 
-        tiempo_total = time.perf_counter() - t0
+        tiempo_total = time.perf_counter() - t0_total
 
         fila = construir_fila_resultado(
             caso,

@@ -14,6 +14,7 @@ if str(raiz) not in sys.path:
     sys.path.insert(0, str(raiz))
 
 from evaluacion_ap import evaluar_resultado_qaoa
+from warmstart_ap import crear_solver_warmstart
 
 
 class TimedSamplerJob:
@@ -62,7 +63,7 @@ def actualizar_mejor(mejor_resultado, resultado, evaluado):
     return mejor_resultado
 
 
-def generar_registro(i, evaluado, punto_inicial, opt_coste):
+def generar_registro(i, evaluado, punto_inicial, opt_coste, warmstart):
     return {
         "start": i,
         "coste": evaluado["coste"],
@@ -76,6 +77,7 @@ def generar_registro(i, evaluado, punto_inicial, opt_coste):
             if evaluado["factible"] and evaluado["coste"] > 0
             else 0
         ),
+        "warmstart": warmstart,
     }
 
 
@@ -118,7 +120,15 @@ def calcular_metricas(historial, opt_coste, t_solver, sampler, starts):
     }
 
 
-def ejecutar_qaoa_once(qp, sampler, repeticiones, maxiter, punto_inicial):
+def ejecutar_qaoa_once(
+    qp,
+    sampler,
+    repeticiones,
+    maxiter,
+    punto_inicial,
+    warmstart=False,
+    epsilon_warmstart=0.25,
+):
     t_callback = []
 
     def callback(eval_count, params, value, metadata):
@@ -138,7 +148,13 @@ def ejecutar_qaoa_once(qp, sampler, repeticiones, maxiter, punto_inicial):
         callback=callback,
     )
 
-    solver = MinimumEigenOptimizer(qaoa)
+    if warmstart:
+        solver = crear_solver_warmstart(
+            qaoa,
+            epsilon=epsilon_warmstart,
+        )
+    else:
+        solver = MinimumEigenOptimizer(qaoa)
 
     t0 = time.perf_counter()
     resultado = solver.solve(qp)
@@ -163,7 +179,16 @@ def procesar_callback(t_callback):
 
 
 def ejecutar_multi_start_qaoa(
-    qp, problema, sampler, starts, repeticiones, maxiter, semilla, opt_coste
+    qp,
+    problema,
+    sampler,
+    starts,
+    repeticiones,
+    maxiter,
+    semilla,
+    opt_coste,
+    warmstart=False,
+    epsilon_warmstart=0.25,
 ):
     rng = random.Random(semilla)
 
@@ -176,14 +201,22 @@ def ejecutar_multi_start_qaoa(
         punto_inicial = [rng.uniform(0, math.pi) for _ in range(2 * repeticiones)]
 
         resultado, t_run, t_callback = ejecutar_qaoa_once(
-            qp, sampler, repeticiones, maxiter, punto_inicial
+            qp,
+            sampler,
+            repeticiones,
+            maxiter,
+            punto_inicial,
+            warmstart=warmstart,
+            epsilon_warmstart=epsilon_warmstart,
         )
 
         tiempos_iter, valores_iter, evals_iter = procesar_callback(t_callback)
         t_solver += t_run
 
         evaluado = evaluar_resultado_qaoa(resultado, problema)
-        registro = generar_registro(i, evaluado, punto_inicial, opt_coste)
+        registro = generar_registro(
+            i, evaluado, punto_inicial, opt_coste, warmstart
+        )
 
         registro.update(
             {
@@ -210,9 +243,11 @@ def resolver_qaoa(
     opt_coste,
     maxiter=100,
     repeticiones=3,
-    starts=5,
+    starts=10,
     semilla=0,
     shots=1024,
+    warmstart=False,
+    epsilon_warmstart=0.25,
 ):
     sampler = crear_sampler(shots, semilla)
 
@@ -225,6 +260,8 @@ def resolver_qaoa(
         maxiter,
         semilla,
         opt_coste,
+        warmstart=warmstart,
+        epsilon_warmstart=epsilon_warmstart,
     )
 
     metricas = calcular_metricas(
@@ -234,6 +271,8 @@ def resolver_qaoa(
         sampler,
         starts
     )
+    metricas["warmstart"] = warmstart
+    metricas["epsilon_warmstart"] = epsilon_warmstart if warmstart else None
 
     if mejor_resultado is None:
         raise RuntimeError("QAOA no devolvio solucion.")
