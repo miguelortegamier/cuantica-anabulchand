@@ -158,7 +158,9 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
         ruta_csv = Path(__file__).resolve().parent / "resultados_kp.csv"
 
     for caso in casos:
+        t0_total = time.perf_counter()
         problema, qp = construir_problema(caso)
+        t_preparacion = time.perf_counter() - t0_total
 
         t0 = time.perf_counter()
 
@@ -168,6 +170,8 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
                 problema,
                 caso["optimo"],
             )
+            metricas["t_solver"] += t_preparacion
+            metricas["t_clasico"] += t_preparacion
             
             evaluado = evaluar_resultado_qaoa(result_qaoa, problema)
         elif metodo == "qaoa_warmstart":
@@ -177,6 +181,8 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
                 caso["optimo"],
                 warmstart=True,
             )
+            metricas["t_solver"] += t_preparacion
+            metricas["t_clasico"] += t_preparacion
 
             evaluado = evaluar_resultado_qaoa(result_qaoa, problema)
 
@@ -196,7 +202,7 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
         else:
             raise ValueError(f"Metodo no reconocido: {metodo}")
 
-        tiempo_total = time.perf_counter() - t0
+        tiempo_total = time.perf_counter() - t0_total
 
         fila = construir_fila_resultado(
             caso,
