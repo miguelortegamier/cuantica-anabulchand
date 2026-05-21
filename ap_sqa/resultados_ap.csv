@@ -1,0 +1,13 @@
+id,problema,metodo,tamano,num_variables_qubo,optimo,valor_o_coste,peso_o_violacion,factible,coincide,ratio_optimo,brecha_optimo,prob_optimo,tasa_factibilidad,ratio_medio_factibles,tiempo_total,t_solver,t_cuantico,t_clasico,starts,reads_por_start,shots,qaoa_reps,qaoa_maxiter,qaoa_optimizer,warmstart,epsilon_warmstart,sqa_beta,sqa_gamma,sqa_trotter,sqa_num_sweeps,penalizacion
+201,AP,sa,2x2,4,5,5,0,True,True,1.0,0,1.0,1.0,0.8830769230769231,0.01027741699363105,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,17
+202,AP,sa,2x2,4,5,5,0,True,True,1.0,0,1.0,1.0,0.9446153846153846,0.0053960829973220825,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,15
+203,AP,sa,2x2,4,6,6,0,True,True,1.0,0,1.0,1.0,0.808,0.006483458011643961,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,19
+204,AP,sa,2x2,4,4,4,0,True,True,1.0,0,1.0,1.0,0.9266666666666666,0.005418124987045303,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,17
+301,AP,sa,3x3,9,10,10,0,True,True,1.0,0,0.9,1.0,0.8501136363636363,0.014028791018063203,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,25
+302,AP,sa,3x3,9,11,11,0,True,True,1.0,0,0.8,1.0,0.8221356837606838,0.014081417000852525,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,28
+303,AP,sa,3x3,9,6,6,0,True,True,1.0,0,1.0,1.0,0.6336071428571428,0.013818000006722286,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,28
+304,AP,sa,3x3,9,7,7,0,True,True,1.0,0,0.9,1.0,0.6796143790849674,0.012866875011241063,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,28
+401,AP,sa,4x4,16,13,13,0,True,True,1.0,0,0.6,1.0,0.6539841071778143,0.025209167011780664,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,37
+402,AP,sa,4x4,16,17,17,0,True,True,1.0,0,0.8,1.0,0.7856976800976802,0.024389583995798603,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,37
+403,AP,sa,4x4,16,14,14,0,True,True,1.0,0,1.0,1.0,0.7174520017968156,0.025578291999408975,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,37
+404,AP,sa,4x4,16,15,15,0,True,True,1.0,0,0.5,1.0,0.6963442359980078,0.02855608399841003,N/A,N/A,N/A,10,10,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,37
