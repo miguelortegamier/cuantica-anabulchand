@@ -8,7 +8,7 @@ from scipy.sparse import SparseEfficiencyWarning
 
 warnings.simplefilter("ignore", SparseEfficiencyWarning)
 
-METODOS_VALIDOS = {"qaoa", "qaoa_warmstart", "sa"}
+METODOS_VALIDOS = {"qaoa", "qaoa_warmstart", "sa", "sqa"}
 METODO_POR_DEFECTO = "qaoa"
 
 
