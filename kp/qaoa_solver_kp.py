@@ -16,34 +16,8 @@ from evaluacion_kp import evaluar_resultado_qaoa
 from warmstart_kp import crear_solver_warmstart
 
 
-class TimedSamplerJob:
-    def __init__(self, job, sampler):
-        self._job = job
-        self._sampler = sampler
-
-    def result(self):
-        t0 = time.perf_counter()
-        resultado = self._job.result()
-        t1 = time.perf_counter()
-        self._sampler.tiempo_total += (t1 - t0)
-        return resultado
-
-    def __getattr__(self, nombre):
-        return getattr(self._job, nombre)
-
-
-class TimedSampler(StatevectorSampler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tiempo_total = 0
-
-    def run(self, pubs, *, shots=None):
-        job = super().run(pubs, shots=shots)
-        return TimedSamplerJob(job, self)
-
-
 def crear_sampler(shots, semilla):
-    return TimedSampler(default_shots=shots, seed=semilla)
+    return StatevectorSampler(default_shots=shots, seed=semilla)
 
 def actualizar_mejor(mejor_resultado, resultado, evaluado):
     if mejor_resultado is None:
@@ -83,9 +57,6 @@ def calcular_metricas(historial, opt_val_total, t_solver, sampler, starts):
         if factibles else 0
     )
 
-    t_cuantico = sampler.tiempo_total
-    t_clasico = t_solver - t_cuantico
-
     todos_tiempos = [
         t for h in historial for t in h.get("tiempos_iter", [])
     ]
@@ -111,8 +82,6 @@ def calcular_metricas(historial, opt_val_total, t_solver, sampler, starts):
         "prob_optimo": prob_optimo,
         "ratio_medio": ratio_medio,
         "t_solver": t_solver,
-        "t_cuantico": t_cuantico,
-        "t_clasico": t_clasico,
         "tiempo_medio_iter": tiempo_medio_iter_global,
         "tiempo_por_eval": tiempo_por_eval,
         "total_evals": total_evals,

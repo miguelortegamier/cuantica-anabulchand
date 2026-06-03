@@ -33,8 +33,6 @@ CAMPOS_CSV_KP = [
     "ratio_medio_factibles",
     "starts",
     "total_muestras",
-    "t_cuantico",
-    "t_clasico",
     "tiempo_por_eval",
     "total_evals",
     "warmstart",
@@ -117,14 +115,6 @@ def construir_fila_resultado(caso, evaluado, metricas, tiempo_total, metodo, pro
             metricas.get("total_muestras", NO_APLICA)
             if metodo in METODOS_MUESTREO else NO_APLICA
         ),
-        "t_cuantico": (
-            metricas.get("t_cuantico", NO_APLICA)
-            if metodo in METODOS_QAOA else NO_APLICA
-        ),
-        "t_clasico": (
-            metricas.get("t_clasico", NO_APLICA)
-            if metodo in METODOS_QAOA else NO_APLICA
-        ),
         "tiempo_por_eval": (
             metricas.get("tiempo_por_eval", NO_APLICA)
             if metodo in METODOS_QAOA else NO_APLICA
@@ -160,7 +150,6 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
     for caso in casos:
         t0_total = time.perf_counter()
         problema, qp = construir_problema(caso)
-        t_preparacion = time.perf_counter() - t0_total
 
         if metodo in METODOS_QAOA:
             resultado, _, metricas = resolver_qaoa(
@@ -169,7 +158,6 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
                 caso["optimo"],
                 warmstart=metodo == "qaoa_warmstart",
             )
-            metricas["t_clasico"] += t_preparacion
             evaluado = evaluar_resultado_qaoa(resultado, problema)
         elif metodo in METODOS_MUESTREO:
             solver = resolver_sa_multi_start if metodo == "sa" else resolver_sqa_multi_start
