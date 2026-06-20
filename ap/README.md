@@ -1,12 +1,10 @@
-# AP: problema de asignacion
+# AP
 
-Esta carpeta contiene los experimentos del Assignment Problem (AP). El objetivo es asignar cada agente a una tarea exactamente una vez, minimizando el coste total de la asignacion.
-
-En terminos simples: dada una matriz de costes, se elige una unica celda por fila y una unica celda por columna de forma que la suma de costes seleccionados sea minima.
+Esta carpeta contiene los experimentos del _Assignment Problem_ (AP). El objetivo es asignar cada agente a una tarea exactamente una vez, minimizando el coste total de la asignacion.
 
 ## Formulacion del problema
 
-La entrada de cada caso es una matriz cuadrada `costes`, donde `costes[i][j]` representa el coste de asignar el agente `i` a la tarea `j`.
+Esto se explica en el documento en la Sección 8.1.2. La entrada de cada caso es una matriz cuadrada `costes`, donde `costes[i][j]` representa el coste de asignar el agente `i` a la tarea `j`.
 
 Se usan variables binarias:
 
@@ -15,7 +13,7 @@ x_i_j = 1 si el agente i se asigna a la tarea j
 x_i_j = 0 en caso contrario
 ```
 
-La solucion debe cumplir:
+La solución debe cumplir:
 
 - Cada fila debe tener exactamente una asignacion.
 - Cada columna debe tener exactamente una asignacion.
@@ -139,13 +137,6 @@ En AP, una solucion es mejor si:
 - `warmstart`: indica si se uso warm-start.
 - `epsilon_warmstart`: parametro epsilon del warm-start.
 - `sqa_beta`, `sqa_gamma`, `sqa_trotter`, `sqa_num_sweeps`: parametros especificos de SQA.
-
-## Como modificar los experimentos
-
-Para anadir un caso nuevo, edita `casos_ap.py` e incluye una matriz cuadrada con su optimo conocido:
-
-```python
-{"id": 405, "costes": [[...], [...], [...]], "optimo": ...}
 ```
 
 Para cambiar parametros de QAOA, modifica la llamada a `resolver_qaoa` o los valores por defecto de `resolver_qaoa` en `qaoa_solver_ap.py`.
