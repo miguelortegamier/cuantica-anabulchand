@@ -8,13 +8,11 @@ from qiskit_optimization.converters import QuadraticProgramToQubo
 from evaluacion_ap import evaluar_resultado_sa
 
 
-def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10):
+def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10, semilla=0):
     historial_starts = []
     total_muestras, muestras_opt, muestras_fact = 0, 0, 0
     mejor_eval = None
     ratios_factibles = []
-
-    t0_total = time.perf_counter()
 
     sampler = SimulatedAnnealingSampler()
     Q, _ = qp_qubo(qp)
@@ -22,7 +20,7 @@ def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10):
     for i in range(starts):
         t0 = time.perf_counter()
 
-        sampleset = sampler.sample_qubo(Q, num_reads=num_reads)
+        sampleset = sampler.sample_qubo(Q, num_reads=num_reads, seed=semilla + i)
 
         evaluaciones = [
             evaluar_resultado_sa(sample, problema)
@@ -31,6 +29,7 @@ def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10):
 
         t1 = time.perf_counter()
 
+        #En AP se prefiere factible; si no, la menor violacion.
         mejor_start = min(
             evaluaciones,
             key=lambda e: (
@@ -73,8 +72,6 @@ def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10):
             "tiempo": t1 - t0,
         })
 
-    t_total = time.perf_counter() - t0_total
-
     prob_optimo_muestras = (
         muestras_opt / total_muestras if total_muestras else 0
     )
@@ -92,33 +89,13 @@ def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10):
         statistics.mean(ratios_factibles) if ratios_factibles else 0
     )
 
-    mejor_coste_start = [h["coste_mejor"] for h in historial_starts]
-
-    coste_medio_start = (
-        statistics.mean(mejor_coste_start) if mejor_coste_start else 0
-    )
-    std_coste_start = (
-        statistics.pstdev(mejor_coste_start)
-        if len(mejor_coste_start) > 1 else 0
-    )
-
-    tiempo_medio_start = (
-        statistics.mean(h["tiempo"] for h in historial_starts)
-        if historial_starts else 0
-    )
-
     metricas = {
         "prob_optimo_muestras": prob_optimo_muestras,
         "prob_optimo_starts": prob_optimo_starts,
         "tasa_factibilidad_muestras": tasa_fact_muestras,
         "ratio_medio_factibles": ratio_medio_factibles,
-        "coste_medio_start": coste_medio_start,
-        "std_coste_start": std_coste_start,
-        "tiempo_total": t_total,
-        "tiempo_medio_start": tiempo_medio_start,
         "total_muestras": total_muestras,
         "starts": starts,
-        "num_reads_start": num_reads,
     }
 
     return mejor_eval, metricas, historial_starts
@@ -128,6 +105,7 @@ def qp_qubo(qp):
     conv = QuadraticProgramToQubo()
     qubo = conv.convert(qp)
 
+    #neal espera un diccionario QUBO con terminos lineales en la diagonal.
     Q = {}
 
     for var, coef in qubo.objective.linear.to_dict(use_name=True).items():

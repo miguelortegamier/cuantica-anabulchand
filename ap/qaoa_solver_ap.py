@@ -17,34 +17,8 @@ from evaluacion_ap import evaluar_resultado_qaoa
 from warmstart_ap import crear_solver_warmstart
 
 
-class TimedSamplerJob:
-    def __init__(self, job, sampler):
-        self._job = job
-        self._sampler = sampler
-
-    def result(self):
-        t0 = time.perf_counter()
-        resultado = self._job.result()
-        t1 = time.perf_counter()
-        self._sampler.tiempo_total += (t1 - t0)
-        return resultado
-
-    def __getattr__(self, nombre):
-        return getattr(self._job, nombre)
-
-
-class TimedSampler(StatevectorSampler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tiempo_total = 0
-
-    def run(self, pubs, *, shots=None):
-        job = super().run(pubs, shots=shots)
-        return TimedSamplerJob(job, self)
-
-
 def crear_sampler(shots, semilla):
-    return TimedSampler(default_shots=shots, seed=semilla)
+    return StatevectorSampler(default_shots=shots, seed=semilla)
 
 
 def actualizar_mejor(mejor_resultado, resultado, evaluado):
@@ -53,6 +27,7 @@ def actualizar_mejor(mejor_resultado, resultado, evaluado):
 
     _, mejor_eval = mejor_resultado
 
+    #Primero manda la factibilidad; despues, coste o menor violacion.
     if evaluado["factible"]:
         if not mejor_eval["factible"] or evaluado["coste"] < mejor_eval["coste"]:
             return (resultado, evaluado)
@@ -85,15 +60,13 @@ def calcular_metricas(historial, opt_coste, t_solver, sampler, starts):
     factibles = [h for h in historial if h["factible"]]
     optimos = [h for h in historial if h["factible"] and h["coste"] == opt_coste]
 
+    #Se separa calidad de solucion y coste temporal del optimizador.
     prob_optimo = len(optimos) / len(historial)
 
     ratio_medio = (
         sum(h["ratio_optimo"] for h in factibles) / len(factibles)
         if factibles else 0
     )
-
-    t_cuantico = sampler.tiempo_total
-    t_clasico = t_solver - t_cuantico
 
     todos_tiempos = [t for h in historial for t in h.get("tiempos_iter", [])]
     tiempo_medio_iter_global = (
@@ -111,8 +84,6 @@ def calcular_metricas(historial, opt_coste, t_solver, sampler, starts):
         "prob_optimo": prob_optimo,
         "ratio_medio": ratio_medio,
         "t_solver": t_solver,
-        "t_cuantico": t_cuantico,
-        "t_clasico": t_clasico,
         "tiempo_medio_iter": tiempo_medio_iter_global,
         "tiempo_por_eval": tiempo_por_eval,
         "total_evals": total_evals,
@@ -131,6 +102,7 @@ def ejecutar_qaoa_once(
 ):
     t_callback = []
 
+    #El callback guarda la evolucion sin tocar el flujo de QAOA.
     def callback(eval_count, params, value, metadata):
         t_callback.append(
             {
@@ -198,6 +170,7 @@ def ejecutar_multi_start_qaoa(
 
     for i in range(starts):
 
+        #Arranque aleatorio para evitar depender de un solo punto inicial.
         punto_inicial = [rng.uniform(0, math.pi) for _ in range(2 * repeticiones)]
 
         resultado, t_run, t_callback = ejecutar_qaoa_once(

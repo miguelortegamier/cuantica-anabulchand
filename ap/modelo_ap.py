@@ -34,6 +34,7 @@ def construir_qubo(problema, penalizacion=None):
     cuadratico = {}
     constante = penalizacion * (m + n)
 
+    #Penaliza que una fila o columna no tenga exactamente una asignacion.
     for i in range(m):
         for j in range(n):
             var = nombre_variable(i, j)
