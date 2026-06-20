@@ -1,12 +1,10 @@
-# KP: problema de la mochila
+# KP
 
 Esta carpeta contiene los experimentos del Knapsack Problem (KP). El objetivo es seleccionar un subconjunto de objetos que maximice el valor total sin superar la capacidad de la mochila.
 
-En terminos simples: cada objeto tiene un valor y un peso. La solucion debe decidir que objetos se meten en la mochila para obtener el mayor valor posible respetando el limite de peso.
-
 ## Formulacion del problema
 
-La entrada de cada caso contiene:
+Esta formulación se explica en la Sección 8.1.1 del documento. La entrada de cada caso contiene:
 
 - `valores`: beneficio de cada objeto.
 - `pesos`: peso de cada objeto.
@@ -42,7 +40,7 @@ Estas variables representan la diferencia entre el peso usado y la capacidad. Gr
 - `resultados.csv`: resultados acumulados de las ejecuciones.
 - `analisis_resultados_kp.ipynb`: notebook para analizar los resultados.
 
-## Como ejecutar
+## Ejecución
 
 Desde la raiz del repositorio:
 
@@ -164,19 +162,7 @@ En KP, una solucion es mejor si:
 - `epsilon_warmstart`: parametro epsilon del warm-start.
 - `sqa_beta`, `sqa_gamma`, `sqa_trotter`, `sqa_num_sweeps`: parametros especificos de SQA.
 
-## Como modificar los experimentos
 
-Para anadir un caso nuevo, edita `casos_kp.py` e incluye listas de valores y pesos con la misma longitud:
-
-```python
-{
-    "id": 505,
-    "valores": [...],
-    "pesos": [...],
-    "capacidad": ...,
-    "optimo": ...,
-}
-```
 
 Para cambiar parametros de QAOA, modifica la llamada a `resolver_qaoa` o los valores por defecto de `resolver_qaoa` en `qaoa_solver_kp.py`.
 
