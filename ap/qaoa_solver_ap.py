@@ -27,6 +27,7 @@ def actualizar_mejor(mejor_resultado, resultado, evaluado):
 
     _, mejor_eval = mejor_resultado
 
+    #Primero manda la factibilidad; despues, coste o menor violacion.
     if evaluado["factible"]:
         if not mejor_eval["factible"] or evaluado["coste"] < mejor_eval["coste"]:
             return (resultado, evaluado)
@@ -59,6 +60,7 @@ def calcular_metricas(historial, opt_coste, t_solver, sampler, starts):
     factibles = [h for h in historial if h["factible"]]
     optimos = [h for h in historial if h["factible"] and h["coste"] == opt_coste]
 
+    #Se separa calidad de solucion y coste temporal del optimizador.
     prob_optimo = len(optimos) / len(historial)
 
     ratio_medio = (
@@ -100,6 +102,7 @@ def ejecutar_qaoa_once(
 ):
     t_callback = []
 
+    #El callback guarda la evolucion sin tocar el flujo de QAOA.
     def callback(eval_count, params, value, metadata):
         t_callback.append(
             {
@@ -167,6 +170,7 @@ def ejecutar_multi_start_qaoa(
 
     for i in range(starts):
 
+        #Arranque aleatorio para evitar depender de un solo punto inicial.
         punto_inicial = [rng.uniform(0, math.pi) for _ in range(2 * repeticiones)]
 
         resultado, t_run, t_callback = ejecutar_qaoa_once(

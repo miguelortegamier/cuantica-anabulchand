@@ -12,6 +12,8 @@ class KP:
 def crear_variables(qp, n, Kmax):
     for i in range(n):
         qp.binary_var(name=f"x{i}")
+
+    #Bits auxiliares para representar la holgura de la capacidad.
     for k in range(Kmax + 1):
         qp.binary_var(name=f"s{k}")
 
@@ -23,6 +25,7 @@ def func_objetivo(problema, Kmax):
 
     lineal = {f"x{i}": -problema.valores[i] for i in range(n)}
 
+    #Objetivo: maximizar valor y penalizar desviarse de la capacidad.
     variables = (
         [(f"x{i}", problema.pesos[i]) for i in range(n)] +
         [(f"s{i}", 2**i) for i in range(Kmax + 1)]

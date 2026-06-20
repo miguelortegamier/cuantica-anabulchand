@@ -57,6 +57,7 @@ def resolver_sqa_multi_start(
     q = qp_qubo(qp)
 
     for i in range(starts):
+        #Algunas versiones de OpenJij no aceptan seed en sample_qubo.
         parametros = {
             "num_reads": num_reads,
             "beta": beta,
@@ -83,6 +84,8 @@ def resolver_sqa_multi_start(
 
         for evaluado in evaluaciones:
             total_muestras += 1
+
+            #Mismas reglas que SA para que la comparacion sea justa.
             if evaluado["factible"]:
                 muestras_fact += 1
                 ratios_factibles.append(

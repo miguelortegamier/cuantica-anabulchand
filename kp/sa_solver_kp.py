@@ -28,6 +28,7 @@ def resolver_sa_multi_start(qp, problema, opt_val_total, starts=10, num_reads=10
 
         t1 = time.perf_counter()
 
+        #En KP se prefiere factible y, dentro de eso, mayor valor.
         mejor_start = max(evaluaciones, key=lambda e: (e["factible"], e["valor"]))
 
         optimo_bool = any(e["factible"] and e["valor"] == opt_val_total for e in evaluaciones)
@@ -73,10 +74,10 @@ def resolver_sa_multi_start(qp, problema, opt_val_total, starts=10, num_reads=10
     )
 
     metricas = {
-        "prob_optimo_muestras": prob_optimo_muestras, #Proporción muestras alcanzan óptimo
-        "prob_optimo_starts": prob_optimo_starts, #Proporción starts encuentran al menos un óptimo
-        "tasa_factibilidad_muestras": tasa_fact_muestras, #Proporción muestras cumplen restricción
-        "ratio_medio_factibles": ratio_medio_factibles, #Calidad media de las soluciones factibles 
+        "prob_optimo_muestras": prob_optimo_muestras, #Proporcion muestras alcanzan optimo
+        "prob_optimo_starts": prob_optimo_starts, #Proporcion starts encuentran al menos un optimo
+        "tasa_factibilidad_muestras": tasa_fact_muestras, #Proporcion muestras cumplen restriccion
+        "ratio_medio_factibles": ratio_medio_factibles, #Calidad media de las soluciones factibles
         "total_muestras": total_muestras,
         "starts": starts,
     }
@@ -88,6 +89,7 @@ def qp_qubo(qp):
     conv = QuadraticProgramToQubo()
     qubo = conv.convert(qp)
 
+    #neal espera un diccionario QUBO con terminos lineales en la diagonal.
     Q = {}
 
     for var, coef in qubo.objective.linear.to_dict().items():

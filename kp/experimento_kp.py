@@ -13,8 +13,7 @@ NO_APLICA = "N/A"
 METODOS_QAOA = {"qaoa", "qaoa_warmstart"}
 METODOS_MUESTREO = {"sa", "sqa"}
 
-# Esquema compacto: calidad y factibilidad comunes, tiempos comparables y
-# parametros solo cuando son necesarios para reproducir la ejecucion.
+#Campos comunes para comparar metodos sin cambiar el CSV cada vez.
 CAMPOS_CSV_KP = [
     "id",
     "num_items",
@@ -77,6 +76,8 @@ def _calidad_final(caso, evaluado):
 
 def construir_fila_resultado(caso, evaluado, metricas, tiempo_total, metodo, problema, qp):
     starts = metricas.get("starts")
+
+    #QAOA mide starts, SA/SQA tambien cuentan muestras internas.
     if metodo in METODOS_QAOA:
         prob_optimo_starts = metricas.get("prob_optimo")
         tasa_factibilidad = (
@@ -151,6 +152,7 @@ def ejecutar_experimentos(casos, metodo, ruta_csv=None):
         t0_total = time.perf_counter()
         problema, qp = construir_problema(caso)
 
+        #Cada metodo devuelve metricas con nombres distintos, se unifican abajo.
         if metodo in METODOS_QAOA:
             resultado, _, metricas = resolver_qaoa(
                 qp,

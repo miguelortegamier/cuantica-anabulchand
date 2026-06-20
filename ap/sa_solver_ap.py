@@ -29,6 +29,7 @@ def resolver_sa_multi_start(qp, problema, opt_coste, starts=10, num_reads=10, se
 
         t1 = time.perf_counter()
 
+        #En AP se prefiere factible; si no, la menor violacion.
         mejor_start = min(
             evaluaciones,
             key=lambda e: (
@@ -104,6 +105,7 @@ def qp_qubo(qp):
     conv = QuadraticProgramToQubo()
     qubo = conv.convert(qp)
 
+    #neal espera un diccionario QUBO con terminos lineales en la diagonal.
     Q = {}
 
     for var, coef in qubo.objective.linear.to_dict(use_name=True).items():
