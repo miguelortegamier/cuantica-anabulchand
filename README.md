@@ -1,14 +1,14 @@
-# Comparacion de metodos cuanticos y clasicos para problemas de optimizacion
+# Comparación de métodos cuánticos y clásicos para problemas de optimización
 
-Este repositorio contiene el codigo experimental usado para comparar distintas estrategias de resolucion sobre dos problemas combinatorios formulados como QUBO:
+Este repositorio contiene el código experimental usado para comparar distintas estrategias de resolución sobre dos problemas combinatorios formulados como QUBO:
 
-- `ap`: Assignment Problem o problema de asignacion.
-- `kp`: Knapsack Problem o problema de la mochila.
+- `ap`: _Assignment Problem_.
+- `kp`: _Knapsack Problem_.
 
 En ambos casos se construye un modelo QUBO con `qiskit-optimization` y se resuelve con cuatro enfoques:
 
-- `qaoa`: Quantum Approximate Optimization Algorithm.
-- `qaoa_warmstart`: QAOA con inicializacion clasica mediante `WarmStartQAOAOptimizer`.
+- `qaoa`: Quantum Approximate Optimisation Algorithm.
+- `qaoa_warmstart`: QAOA con inicialización clásica mediante `WarmStartQAOAOptimizer`.
 - `sa`: Simulated Annealing clasico usando `neal`.
 - `sqa`: Simulated Quantum Annealing usando `OpenJij`.
 
@@ -45,21 +45,17 @@ En ambos casos se construye un modelo QUBO con `qiskit-optimization` y se resuel
 `-- README.md
 ```
 
-La organizacion de `ap` y `kp` es paralela. Cada carpeta tiene sus propios casos de prueba, construccion del QUBO, evaluacion de soluciones, solvers, ejecucion experimental y fichero CSV de resultados.
-
 ## Requisitos
 
-El codigo esta escrito en Python y usa las siguientes dependencias principales:
+El código está escrito en Python y usa las siguientes dependencias principales:
 
 ```bash
 pip install qiskit qiskit-algorithms qiskit-optimization scipy dimod dwave-neal openjij
 ```
 
-`openjij` solo es necesario para ejecutar el metodo `sqa`. Los metodos `qaoa`, `qaoa_warmstart` y `sa` no dependen de OpenJij.
+## Ejecución rápida
 
-## Ejecucion rapida
-
-Desde la raiz del repositorio:
+Desde la raíz del repositorio:
 
 ```bash
 python ap/main_ap.py qaoa
@@ -73,14 +69,14 @@ python kp/main_kp.py sa
 python kp/main_kp.py sqa
 ```
 
-Si no se indica metodo, se ejecuta `qaoa` por defecto:
+Si no se indica método, se ejecuta `qaoa` por defecto:
 
 ```bash
 python ap/main_ap.py
 python kp/main_kp.py
 ```
 
-Cada ejecucion recorre todos los casos definidos en `casos_ap.py` o `casos_kp.py` y anade una fila por caso al CSV correspondiente.
+Cada ejecución recorre todos los casos definidos en `casos_ap.py` o `casos_kp.py` y añade una fila por caso al CSV correspondiente.
 
 ## Flujo general del codigo
 
@@ -90,12 +86,4 @@ Cada ejecucion recorre todos los casos definidos en `casos_ap.py` o `casos_kp.py
 4. `qaoa_solver_*.py`, `sa_solver_*.py` o `sqa_solver_*.py` resuelve el QUBO.
 5. `evaluacion_*.py` interpreta la solucion binaria en terminos del problema original.
 6. `experimento_*.py` calcula metricas comparables y guarda los resultados en CSV.
-7. `analisis_resultados_*.ipynb` permite estudiar los CSV y generar conclusiones.
-
-## Lectura recomendada
-
-Para entender el codigo en detalle:
-
-- Empieza por `ap/README.md` para el problema de asignacion.
-- Sigue con `kp/README.md` para el problema de mochila.
-- Despues revisa `modelo_ap.py` y `modelo_kp.py`, porque ahi esta la formulacion matematica que conecta el problema original con el QUBO.
+7. `analisis_resultados_*.ipynb` permite estudiar los CSV y generar conclusione
